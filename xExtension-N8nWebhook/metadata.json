@@ -1,0 +1,8 @@
+{
+  "name": "n8n Label Webhook",
+  "author": "Martin Behrendt",
+  "description": "Sends selected FreshRSS labels to an n8n webhook.",
+  "version": "0.1.0",
+  "entrypoint": "N8nWebhook",
+  "type": "user"
+}

@@ -1,0 +1,7 @@
+<?php
+
+return [
+	'url' => 'https://n8n.example/webhook/freshrss-label',
+	'token' => 'replace-me',
+	'trigger_labels' => ['label-a', 'label-b'],
+];
