@@ -1,8 +1,12 @@
 #!/bin/sh
 set -eu
 
-[ "$#" -eq 1 ] || { echo "Usage: $0 <ip-address>" >&2; exit 2; }
+[ "$#" -eq 2 ] || { echo "Usage: $0 <user@host> <extension>" >&2; exit 2; }
+
+target=$1
+extension=$2
+[ -f "$extension/metadata.json" ] || { echo "Unknown extension: $extension" >&2; exit 2; }
 
 rsync -av \
-	xExtension-N8nWebhook/ \
-	"root@$1:/opt/freshrss/extensions/xExtension-N8nWebhook/"
+	"$extension/" \
+	"$target:/opt/freshrss/extensions/$extension/"

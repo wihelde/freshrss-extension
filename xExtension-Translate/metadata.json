@@ -1,0 +1,8 @@
+{
+	"name": "Translate",
+	"author": "Martin Behrendt",
+	"description": "Translate individual articles through a local LibreTranslate server.",
+	"version": "0.1.0",
+	"entrypoint": "Translate",
+	"type": "user"
+}

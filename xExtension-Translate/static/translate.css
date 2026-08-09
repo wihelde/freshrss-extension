@@ -1,0 +1,53 @@
+.translate-controls {
+	display: inline-flex;
+}
+
+.flux:not(.active) .translate-controls {
+	display: none;
+}
+
+.flux.active .item.website:has(.translate-controls) {
+	display: flex;
+	width: auto;
+}
+
+.flux.active > .flux_header {
+	display: flex;
+	grid-template: none;
+	justify-content: flex-start;
+}
+
+.flux.active > .flux_header > .item.titleAuthorSummaryDate {
+	flex: 1 1 0;
+	margin: 0;
+}
+
+.flux.active > .flux_header > .item.titleAuthorSummaryDate > .title {
+	padding-inline: var(--frss-padding-flux-items);
+}
+
+.translate-button {
+	appearance: none;
+	background: transparent;
+	border: 0;
+	color: inherit;
+	cursor: pointer;
+	font: inherit;
+	padding-inline: var(--frss-padding-flux-items);
+	white-space: nowrap;
+}
+
+.translate-button:hover,
+.translate-button:focus-visible {
+	background-color: var(--frss-background-color-hover, rgba(127, 127, 127, .15));
+}
+
+.translate-button:disabled {
+	cursor: wait;
+	opacity: .65;
+}
+
+.translate-error {
+	color: var(--alert-error-text-color, #b00);
+	margin: .5rem 0 0;
+}
