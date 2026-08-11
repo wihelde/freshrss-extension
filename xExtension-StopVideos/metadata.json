@@ -1,0 +1,8 @@
+{
+	"name": "Stop Videos",
+	"author": "Martin Behrendt",
+	"description": "Stops embedded media when another article is opened.",
+	"version": "0.1.0",
+	"entrypoint": "StopVideos",
+	"type": "user"
+}

@@ -3,6 +3,7 @@
 Personal FreshRSS extensions:
 
 - [n8n Label Webhook](xExtension-N8nWebhook/README.md) sends labeled entries to an n8n webhook.
+- [Stop Videos](xExtension-StopVideos/README.md) stops embedded media when switching articles.
 - [Translate](xExtension-Translate/README.md) translates individual articles through LibreTranslate.
 
 ## Installation
