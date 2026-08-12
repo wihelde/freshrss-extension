@@ -4,7 +4,7 @@ Translates the visible text of individual FreshRSS articles from English to Germ
 
 ## Installation
 
-Copy `xExtension-Translate` to `FreshRSS/extensions/`, enable **Translate** in **Configuration → Extensions**, then configure the LibreTranslate URL. The default is `http://192.168.178.115:5000`.
+Copy `xExtension-Translate` to `FreshRSS/extensions/`, enable **Translate** in **Configuration → Extensions**, then configure the LibreTranslate URL.
 
 The extension shortcut defaults to <kbd>Ü</kbd> and can be changed or disabled on the same configuration page.
 

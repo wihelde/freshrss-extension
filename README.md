@@ -3,7 +3,6 @@
 Personal FreshRSS extensions:
 
 - [n8n Label Webhook](xExtension-N8nWebhook/README.md) sends labeled entries to an n8n webhook.
-- [Stop Videos](xExtension-StopVideos/README.md) stops embedded media when switching articles.
 - [Translate](xExtension-Translate/README.md) translates individual articles through LibreTranslate.
 
 ## Installation
@@ -18,10 +17,10 @@ Requirements:
 - `rsync` installed locally and remotely
 - FreshRSS installed at `/opt/freshrss`
 
-Deploy one extension:
+Example to deploy one extension:
 
 ```sh
-./deploy.sh root@192.168.178.123 xExtension-Translate
+./deploy.sh root@xxx.xxx.xxx.xxx xExtension-Translate
 ```
 
-The script requires both the SSH target and extension directory; it has no implicit default extension.
+The script requires both the SSH target and extension directory.
