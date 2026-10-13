@@ -87,6 +87,5 @@ final class N8nWebhookExtension extends Minz_Extension {
 		if (curl_errno($curl) !== 0 || curl_getinfo($curl, CURLINFO_RESPONSE_CODE) >= 400) {
 			Minz_Log::warning('n8n webhook failed: ' . curl_error($curl));
 		}
-		curl_close($curl);
 	}
 }

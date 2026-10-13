@@ -1,0 +1,37 @@
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS && $CI_PIPELINE_SOURCE == "push"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH'
+
+stages: [test]
+
+default:
+  tags: [home-linux]
+
+.php-tests:
+  stage: test
+  script:
+    - sh tests/php.sh
+    - sh tests/integration.sh
+
+php-baseline:
+  extends: .php-tests
+  image: php:8.3.33-cli-bookworm@sha256:013e2a0fab922e925d12c1546a58ab8ca4480ac22507894a1f18025707098414
+
+php-current:
+  extends: .php-tests
+  image: php:8.5.10-cli-bookworm@sha256:97c41462ce985a92b3fcb29dc02d5da568c7865ccb9fb9b0f712e192ad09e1bf
+
+browser:
+  stage: test
+  image: node:22.22.2-bookworm-slim@sha256:9f6d5975c7dca860947d3915877f85607946403fc55349f39b4bc3688448bb6e
+  script:
+    - npm ci
+    - npx playwright install --with-deps chromium
+    - npm test
+  artifacts:
+    when: on_failure
+    paths: [test-results/]
+    expire_in: 7 days

@@ -29,7 +29,6 @@ final class LibreTranslate {
 		$response = curl_exec($curl);
 		$status = curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
 		$error = curl_error($curl);
-		curl_close($curl);
 
 		if (!is_string($response) || $status < 200 || $status >= 300) {
 			throw new RuntimeException($error !== '' ? $error : "LibreTranslate returned HTTP {$status}");
