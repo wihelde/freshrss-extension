@@ -124,21 +124,14 @@ for (const skipping of [false, true]) {
   test(`${skipping ? 'skipping to' : 'opening'} the next article stops old media`, async ({ page }) => {
     await page.route('https://freshrss.test/**', route => route.fulfill({ body: '' }));
     await page.goto('https://freshrss.test/');
-    await page.setContent(`<div id="old" class="flux current active"><video id="old-video"></video><audio id="old-audio"></audio>
-      <iframe id="old-frame" src="/video"></iframe></div>
-      <div id="next" class="flux"><video id="current-video"></video><audio id="current-audio"></audio>
-      <iframe id="current-frame" src="/video"></iframe></div>`);
+    await page.setContent(`<div id="old" class="flux current active">
+      <video id="old-video"></video><audio id="old-audio"></audio></div>
+      <div id="next" class="flux">
+      <video id="current-video"></video><audio id="current-audio"></audio></div>`);
     await page.evaluate(() => {
       window.stopped = [];
       document.querySelectorAll('video, audio').forEach(media => {
         media.pause = () => window.stopped.push(media.id);
-      });
-      document.querySelectorAll('iframe').forEach(frame => {
-        const src = frame.src;
-        Object.defineProperty(frame, 'src', {
-          get: () => src,
-          set: value => { if (value === src) window.stopped.push(frame.id); },
-        });
       });
     });
     await page.addScriptTag({ content: stopVideosScript });
@@ -150,6 +143,55 @@ for (const skipping of [false, true]) {
       document.getElementById('old').classList.remove('active', 'current');
       if (!skipping) next.dispatchEvent(new Event('freshrss:openArticle', { bubbles: true }));
     }, skipping);
-    expect(await page.evaluate(() => window.stopped)).toEqual(['old-video', 'old-audio', 'old-frame']);
+    expect(await page.evaluate(() => window.stopped)).toEqual(['old-video', 'old-audio']);
   });
 }
+
+test('a hidden lazy iframe stops playing on the first article switch', async ({ page }) => {
+  await page.route('https://freshrss.test/', route => route.fulfill({
+    contentType: 'text/html',
+    body: `<style>.flux:not(.active) .flux_content { display: none; }</style>
+      <article id="old" class="flux current active"><div class="flux_content">
+        <iframe loading="lazy" src="https://embed.test/"></iframe>
+      </div></article>
+      <article id="next" class="flux"></article>`,
+  }));
+  await page.route('https://embed.test/', route => route.fulfill({
+    contentType: 'text/html',
+    body: '<iframe src="https://player.test/"></iframe>',
+  }));
+  await page.route('https://player.test/', route => route.fulfill({
+    contentType: 'text/html',
+    body: `<button>Play</button><audio></audio><script>
+      document.querySelector('button').onclick = async () => {
+        const context = new AudioContext();
+        const oscillator = context.createOscillator();
+        const output = context.createMediaStreamDestination();
+        oscillator.connect(output);
+        oscillator.start();
+        const audio = document.querySelector('audio');
+        audio.srcObject = output.stream;
+        await audio.play();
+        audio.dataset.playing = 'true';
+      };
+    </script>`,
+  }));
+  await page.goto('https://freshrss.test/');
+  await page.addScriptTag({ content: stopVideosScript });
+
+  const player = page.frameLocator('#old iframe').frameLocator('iframe');
+  await player.getByRole('button', { name: 'Play' }).click();
+  await expect(player.locator('audio')).toHaveAttribute('data-playing', 'true');
+  const playingFrame = page.frames().find(frame => frame.url() === 'https://player.test/');
+  await page.evaluate(() => {
+    document.getElementById('next').classList.add('active', 'current');
+    document.getElementById('old').classList.remove('active', 'current');
+  });
+  await expect.poll(() => playingFrame.isDetached(), { timeout: 1500 }).toBe(true);
+
+  await page.evaluate(() => {
+    document.getElementById('old').classList.add('active', 'current');
+    document.getElementById('next').classList.remove('active', 'current');
+  });
+  await expect(player.locator('audio')).toHaveJSProperty('paused', true);
+});
