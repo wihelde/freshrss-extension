@@ -120,27 +120,36 @@ test('the shortcut ignores typing and new articles get one translation button', 
   await expect(page.locator('#article .translate-button')).toHaveCount(1);
 });
 
-test('switching articles stops old media and leaves current media untouched', async ({ page }) => {
-  await page.route('https://freshrss.test/**', route => route.fulfill({ body: '' }));
-  await page.goto('https://freshrss.test/');
-  await page.setContent(`<div class="flux"><video id="old-video"></video><audio id="old-audio"></audio>
-    <iframe id="old-frame" src="/video"></iframe></div>
-    <div class="flux current"><video id="current-video"></video><audio id="current-audio"></audio>
-    <iframe id="current-frame" src="/video"></iframe></div>`);
-  await page.evaluate(() => {
-    window.stopped = [];
-    document.querySelectorAll('video, audio').forEach(media => {
-      media.pause = () => window.stopped.push(media.id);
-    });
-    document.querySelectorAll('iframe').forEach(frame => {
-      const src = frame.src;
-      Object.defineProperty(frame, 'src', {
-        get: () => src,
-        set: value => { if (value === src) window.stopped.push(frame.id); },
+for (const skipping of [false, true]) {
+  test(`${skipping ? 'skipping to' : 'opening'} the next article stops old media`, async ({ page }) => {
+    await page.route('https://freshrss.test/**', route => route.fulfill({ body: '' }));
+    await page.goto('https://freshrss.test/');
+    await page.setContent(`<div id="old" class="flux current active"><video id="old-video"></video><audio id="old-audio"></audio>
+      <iframe id="old-frame" src="/video"></iframe></div>
+      <div id="next" class="flux"><video id="current-video"></video><audio id="current-audio"></audio>
+      <iframe id="current-frame" src="/video"></iframe></div>`);
+    await page.evaluate(() => {
+      window.stopped = [];
+      document.querySelectorAll('video, audio').forEach(media => {
+        media.pause = () => window.stopped.push(media.id);
+      });
+      document.querySelectorAll('iframe').forEach(frame => {
+        const src = frame.src;
+        Object.defineProperty(frame, 'src', {
+          get: () => src,
+          set: value => { if (value === src) window.stopped.push(frame.id); },
+        });
       });
     });
+    await page.addScriptTag({ content: stopVideosScript });
+    await page.evaluate(skipping => {
+      // FreshRSS moves .current even when skipping without opening the next article.
+      const next = document.getElementById('next');
+      if (!skipping) next.classList.add('active');
+      next.classList.add('current');
+      document.getElementById('old').classList.remove('active', 'current');
+      if (!skipping) next.dispatchEvent(new Event('freshrss:openArticle', { bubbles: true }));
+    }, skipping);
+    expect(await page.evaluate(() => window.stopped)).toEqual(['old-video', 'old-audio', 'old-frame']);
   });
-  await page.addScriptTag({ content: stopVideosScript });
-  await page.evaluate(() => document.dispatchEvent(new Event('freshrss:openArticle')));
-  expect(await page.evaluate(() => window.stopped)).toEqual(['old-video', 'old-audio', 'old-frame']);
-});
+}
