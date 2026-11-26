@@ -9,7 +9,12 @@ new MutationObserver(mutations => {
 
 	for (const article of previousArticles) {
 		article.querySelectorAll('video, audio').forEach(media => media.pause());
-		article.querySelectorAll('iframe[src]').forEach(frame => { frame.src = frame.src; });
+		article.querySelectorAll('iframe[src]').forEach(frame => {
+			// Detach the player immediately, even when a hidden iframe would defer reloading.
+			const { parentNode, nextSibling } = frame;
+			frame.remove();
+			parentNode.insertBefore(frame, nextSibling);
+		});
 	}
 }).observe(document, {
 	subtree: true,
